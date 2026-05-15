@@ -8,12 +8,14 @@ datasource db {
 }
 
 model Admin {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  email               String   @unique
+  password            String
+  name                String?
+  mustChangePassword  Boolean  @default(true)
+  lastLoginAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Subscriber {
@@ -73,6 +75,11 @@ model Event {
   status        String     @default("SCHEDULED")
   rsvpEnabled   Boolean    @default(false)
   rsvpCount     Int        @default(0)
+  // Featured-promotion window. When the current time falls inside [promoteFrom, promoteUntil],
+  // the event is highlighted on the home page and at the top of the blog.
+  // If both are null, the event is treated as standard "upcoming".
+  promoteFrom   DateTime?
+  promoteUntil  DateTime?
   broadcastSent Boolean    @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

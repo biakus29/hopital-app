@@ -15,12 +15,18 @@ export const subscribeSchema = z.object({
   path: ['phone']
 })
 
+// Accepts: empty string, absolute URL, or a relative path starting with "/"
+const imagePath = z.string().refine(
+  s => !s || /^https?:\/\//i.test(s) || s.startsWith('/'),
+  { message: 'Must be a URL or a path starting with /' }
+).optional().nullable()
+
 export const postSchema = z.object({
   title: z.string().min(3).max(200),
   excerpt: z.string().max(500).optional().nullable(),
   content: z.string().min(1),
   category: z.string().max(60).optional().nullable(),
-  coverImage: z.string().url().or(z.string().startsWith('/')).optional().nullable(),
+  coverImage: imagePath,
   author: z.string().max(120).optional().nullable(),
   published: z.boolean().optional()
 })
@@ -31,9 +37,11 @@ export const eventSchema = z.object({
   location: z.string().max(200).optional().nullable(),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date().optional().nullable(),
-  coverImage: z.string().optional().nullable(),
+  coverImage: imagePath,
   status: z.enum(['SCHEDULED', 'ONGOING', 'ENDED', 'CANCELLED']).optional(),
-  rsvpEnabled: z.boolean().optional()
+  rsvpEnabled: z.boolean().optional(),
+  promoteFrom: z.coerce.date().optional().nullable(),
+  promoteUntil: z.coerce.date().optional().nullable()
 })
 
 export const broadcastSchema = z.object({
@@ -53,7 +61,8 @@ export const broadcastSchema = z.object({
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6)
+  // Allow short defaults like "admin"; strength is enforced at change-password.
+  password: z.string().min(1)
 })
 
 export const rsvpSchema = z.object({
