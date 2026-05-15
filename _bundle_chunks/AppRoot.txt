@@ -1,0 +1,1 @@
+ the Community`),W(`span`,null,`Healthcare Excellence`)])],-1)])])]))}}),Bu=tr({__name:`App`,setup(e){let t=ws(),n=La(()=>t.meta.layout===`portal`||t.meta.layout===`legacy`);return(e,t)=>n.value?(H(),ea(I(cl),{key
