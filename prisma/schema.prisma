@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscriber {
+  id             Int       @id @default(autoincrement())
+  phone          String?   @unique
+  email          String?   @unique
+  name           String?
+  status         String    @default("ACTIVE")
+  language       String    @default("en")
+  // Per-channel opt-in flags. A subscriber may have only an email, only a phone,
+  // or both, and can choose which channels to receive notifications on.
+  optInWhatsapp  Boolean   @default(true)
+  optInSms       Boolean   @default(false)
+  optInEmail     Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
+  unsubscribedAt DateTime?
+  lastMessageAt  DateTime?
+  source         String?
+  notes          String?
+
+  tags       SubscriberTag[] @relation("SubscriberToTag")
+  deliveries BroadcastDelivery[]
+}
+
+model SubscriberTag {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  subscribers Subscriber[] @relation("SubscriberToTag")
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String
+  category    String?
+  coverImage  String?
+  author      String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Event {
+  id            Int        @id @default(autoincrement())
+  title         String
+  slug          String     @unique
+  description   String
+  location      String?
+  startsAt      DateTime
+  endsAt        DateTime?
+  coverImage    String?
+  status        String     @default("SCHEDULED")
+  rsvpEnabled   Boolean    @default(false)
+  rsvpCount     Int        @default(0)
+  broadcastSent Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  broadcasts    Broadcast[]
+  rsvps         EventRsvp[]
+}
+
+model EventRsvp {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  phone     String
+  name      String?
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, phone])
+}
+
+model Broadcast {
+  id           Int                 @id @default(autoincrement())
+  title        String?
+  // Channel: WHATSAPP | EMAIL | SMS | MULTI (sends to every channel the subscriber opted into)
+  channel      String              @default("WHATSAPP")
+  // For email channel only
+  subject      String?
+  message      String
+  mediaUrl     String?
+  filterTag    String?
+  filterStatus String              @default("ACTIVE")
+  status       String              @default("PENDING")
+  totalCount   Int                 @default(0)
+  sentCount    Int                 @default(0)
+  failedCount  Int                 @default(0)
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  eventId      Int?
+  event        Event?              @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  deliveries   BroadcastDelivery[]
+}
+
+model BroadcastDelivery {
+  id           Int       @id @default(autoincrement())
+  broadcastId  Int
+  broadcast    Broadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  subscriberId Int
+  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  channel      String    @default("WHATSAPP")
+  status       String    @default("QUEUED")
+  error        String?
+  sentAt       DateTime?
+
+  @@unique([broadcastId, subscriberId, channel])
+}
+
+model IncomingMessage {
+  id         Int      @id @default(autoincrement())
+  fromPhone  String
+  body       String
+  command    String?
+  receivedAt DateTime @default(now())
+  handled    Boolean  @default(false)
+}
