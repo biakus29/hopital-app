@@ -26,6 +26,42 @@ eventsRouter.get('/', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// Public: events to feature on home/blog right now. An event is "promoted" when:
+//   - the current time is within [promoteFrom, promoteUntil], OR
+//   - neither boundary is set AND startsAt is within the next 14 days.
+// Admins control the window by setting promoteFrom/promoteUntil on the event.
+eventsRouter.get('/promoted', async (req, res, next) => {
+  try {
+    const now = new Date()
+    const in14days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+
+    const events = await prisma.event.findMany({
+      where: {
+        status: { in: ['SCHEDULED', 'ONGOING'] },
+        startsAt: { gte: now },
+        OR: [
+          {
+            AND: [
+              { OR: [{ promoteFrom: null }, { promoteFrom: { lte: now } }] },
+              { promoteUntil: { gte: now } }
+            ]
+          },
+          {
+            AND: [
+              { promoteFrom: null },
+              { promoteUntil: null },
+              { startsAt: { lte: in14days } }
+            ]
+          }
+        ]
+      },
+      orderBy: { startsAt: 'asc' },
+      take: 10
+    })
+    res.json(events)
+  } catch (err) { next(err) }
+})
+
 eventsRouter.get('/:slug', async (req, res, next) => {
   try {
     const event = await prisma.event.findUnique({ where: { slug: req.params.slug } })

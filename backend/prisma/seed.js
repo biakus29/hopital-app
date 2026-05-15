@@ -6,14 +6,16 @@ const prisma = new PrismaClient()
 
 async function main () {
   const email = process.env.ADMIN_EMAIL || 'admin@st-therese-hospital.cm'
-  const password = process.env.ADMIN_PASSWORD || 'ChangeMe!2026'
+  const password = process.env.ADMIN_PASSWORD || 'admin'
   const name = process.env.ADMIN_NAME || 'Administrator'
 
   const hashed = await bcrypt.hash(password, 10)
+  // Only set/reset the password on initial create, never overwrite an existing
+  // admin's password from the seed (so an admin who rotated it doesn't lose it).
   const admin = await prisma.admin.upsert({
     where: { email },
     update: { name },
-    create: { email, password: hashed, name }
+    create: { email, password: hashed, name, mustChangePassword: true }
   })
   console.log(`✅ Admin ready: ${admin.email}`)
 
@@ -56,12 +58,26 @@ async function main () {
   }
   console.log(`✅ ${samplePosts.length} sample posts ready`)
 
-  const inOneMonth = new Date(); inOneMonth.setMonth(inOneMonth.getMonth() + 1)
+  const now = new Date()
+  const inOneMonth = new Date(now); inOneMonth.setMonth(inOneMonth.getMonth() + 1)
+  const inTwoWeeks = new Date(now); inTwoWeeks.setDate(inTwoWeeks.getDate() + 14)
+  const promoteUntil = new Date(inTwoWeeks); promoteUntil.setDate(promoteUntil.getDate() + 1) // until the day after the event
+
   const sampleEvents = [
     {
       title: 'Free Diabetes Screening Day',
       description: 'Open to all residents of Nomayos and surrounding areas. Free blood-glucose tests, nutrition advice, and consultations with our endocrinology team.',
       location: 'St. Therese Hospital — Main Hall',
+      startsAt: inTwoWeeks,
+      rsvpEnabled: true,
+      coverImage: '/images/banners/1.jpg',
+      promoteFrom: now,
+      promoteUntil
+    },
+    {
+      title: 'Maternal Care Open House',
+      description: 'Discover our pediatric and maternity programs. Guided tour, midwife consultations and free vaccination info for newborns.',
+      location: 'Pediatric Wing, St. Therese Hospital',
       startsAt: inOneMonth,
       rsvpEnabled: true,
       coverImage: '/images/banners/1.jpg'

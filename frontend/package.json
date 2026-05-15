@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dompurify": "^3.4.3",
     "lucide-vue-next": "^0.400.0",
+    "marked": "^14.1.4",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },

@@ -84,25 +84,8 @@ onMounted(() => {
               />
             </RouterLink>
           </nav>
-          <!-- TODO: bundle section unclear: drawer footer wrapper classes (`du`, `fu`) not visible in bundle -->
           <div class="p-6 border-t border-slate-100">
             <div class="space-y-4">
-              <RouterLink
-                to="/portal"
-                class="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm"
-                @click="toggleMobile"
-              >
-                <!-- TODO: bundle section unclear: icon wrapper class (`pu`) not visible in bundle -->
-                <div class="p-3 rounded-xl bg-blue-50 text-blue-600">
-                  <Shield :size="24" />
-                </div>
-                <div class="text-left">
-                  <div class="text-sm font-black text-slate-900">Staff Portal</div>
-                  <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                    Internal Access
-                  </div>
-                </div>
-              </RouterLink>
               <RouterLink
                 to="/book"
                 class="btn-primary w-full text-center py-5 shadow-teal-900/20"
@@ -171,17 +154,7 @@ onMounted(() => {
             />
           </RouterLink>
         </nav>
-        <!-- TODO: bundle section unclear: header CTA cluster classes (`wu`, `Tu`) not visible in bundle -->
         <div class="flex items-center gap-4">
-          <RouterLink
-            to="/portal"
-            class="hidden xl:flex items-center gap-3 text-xs font-black text-slate-900 uppercase tracking-widest hover:text-blue-600 transition-all"
-          >
-            <div class="p-2 rounded-xl bg-blue-50 text-blue-600">
-              <Shield :size="18" />
-            </div>
-            Staff Portal
-          </RouterLink>
           <RouterLink to="/book" class="btn-primary !py-3.5 !px-8 text-xs hidden lg:flex">
             Book a Visit
           </RouterLink>
@@ -291,11 +264,6 @@ onMounted(() => {
               <li>
                 <RouterLink to="/careers" class="hover:text-white transition-colors">
                   Careers
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/portal" class="hover:text-white transition-colors">
-                  Staff Portal
                 </RouterLink>
               </li>
               <li>

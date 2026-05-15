@@ -8,6 +8,12 @@ coverage/
 Thumbs.db
 .vscode/
 .idea/
+.claude/
+
+# Workspace temporary artifacts (reverse-engineering, scratch files)
+_bundle_chunks/
+*-minified.txt
+hospital-vue/
 
 # Frontend
 frontend/node_modules/
@@ -20,6 +26,7 @@ backend/node_modules/
 backend/.env
 backend/.env.*
 backend/.wwebjs_auth/
+backend/uploads/
 backend/data/*.json
 backend/prisma/data/*.db
 backend/prisma/data/*.db-journal

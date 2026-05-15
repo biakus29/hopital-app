@@ -7,10 +7,24 @@ import BookView from '../views/BookView.vue'
 import ContactView from '../views/ContactView.vue'
 import BlogView from '../views/BlogView.vue'
 import BlogPostView from '../views/BlogPostView.vue'
-import PortalView from '../views/PortalView.vue'
 import PolicyView from '../views/PolicyView.vue'
 import ModernContentView from '../views/ModernContentView.vue'
 import LegacyPageView from '../views/LegacyPageView.vue'
+
+import { auth } from '../stores/auth'
+
+// Admin pages — lazy-loaded so the public bundle stays slim
+const AdminLogin       = () => import('../views/admin/LoginView.vue')
+const AdminDashboard   = () => import('../views/admin/DashboardView.vue')
+const AdminPostsList   = () => import('../views/admin/PostsListView.vue')
+const AdminPostEdit    = () => import('../views/admin/PostEditView.vue')
+const AdminEventsList  = () => import('../views/admin/EventsListView.vue')
+const AdminEventEdit   = () => import('../views/admin/EventEditView.vue')
+const AdminSubscribers = () => import('../views/admin/SubscribersView.vue')
+const AdminBroadcasts  = () => import('../views/admin/BroadcastsView.vue')
+const AdminInbox       = () => import('../views/admin/InboxView.vue')
+const AdminUploads     = () => import('../views/admin/UploadsView.vue')
+const AdminSettings    = () => import('../views/admin/SettingsView.vue')
 
 const modern = (path, pageKey) => ({
   path,
@@ -44,9 +58,6 @@ const routes = [
   { path: '/blog/:slug', component: BlogPostView },
   modern('/blog-single-post', 'blogSingle'),
 
-  { path: '/portal', component: PortalView, meta: { layout: 'portal' } },
-  { path: '/provider-login', component: PortalView, meta: { layout: 'portal' } },
-
   modern('/team', 'team'),
   modern('/careers', 'careers'),
   modern('/faqs', 'faqs'),
@@ -77,7 +88,6 @@ const routes = [
   legacy('/legacy/contact-us', 'contact-us.html'),
   legacy('/legacy/blog', 'blog.html'),
   legacy('/legacy/blog-single-post', 'blog-single-post.html'),
-  legacy('/legacy/provider-login', 'provider-login.html'),
   legacy('/legacy/team', 'team.html'),
   legacy('/legacy/careers', 'careers.html'),
   legacy('/legacy/faqs', 'faqs.html'),
@@ -98,10 +108,25 @@ const routes = [
   legacy('/legacy/supplies-single', 'supplies-single.html'),
   legacy('/legacy/shopping-cart', 'shopping-cart.html'),
 
+  // --- Admin ---
+  { path: '/admin/login',       component: AdminLogin,       meta: { layout: 'admin-bare' } },
+  { path: '/admin',             component: AdminDashboard,   meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/posts',       component: AdminPostsList,   meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/posts/new',   component: AdminPostEdit,    meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/posts/:id',   component: AdminPostEdit,    meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/events',      component: AdminEventsList,  meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/events/new',  component: AdminEventEdit,   meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/events/:id',  component: AdminEventEdit,   meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/subscribers', component: AdminSubscribers, meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/broadcasts',  component: AdminBroadcasts,  meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/inbox',       component: AdminInbox,       meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/uploads',     component: AdminUploads,     meta: { layout: 'admin', requiresAuth: true } },
+  { path: '/admin/settings',    component: AdminSettings,    meta: { layout: 'admin', requiresAuth: true } },
+
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, saved) {
@@ -110,3 +135,14 @@ export default createRouter({
     return { top: 0 }
   }
 })
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !auth.isLoggedIn.value) {
+    return { path: '/admin/login', query: { next: to.fullPath } }
+  }
+  if (to.path === '/admin/login' && auth.isLoggedIn.value) {
+    return { path: '/admin' }
+  }
+})
+
+export default router

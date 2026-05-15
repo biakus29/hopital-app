@@ -97,6 +97,14 @@
       </div>
     </section>
 
+    <!-- FEATURED EVENTS — admin-controlled promotion window -->
+    <EventsShowcase
+      variant="showcase"
+      eyebrow="Live at the hospital"
+      title="Don't miss what's coming next"
+      subtitle="Featured by our team for a limited time. Reserve your spot in seconds — confirmations are sent to your WhatsApp."
+    />
+
     <!-- SERVICES -->
     <section class="services sr" ref="servicesRef">
       <div class="section-header sr-child">
@@ -225,6 +233,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import EventsShowcase from '@/components/EventsShowcase.vue'
 import { 
   Heart, 
   Baby, 
