@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "postinstall": "prisma generate",
+    "postinstall": "node -e \"try{require('child_process').execSync('prisma generate',{cwd:process.env.INIT_CWD||process.cwd(),stdio:'inherit'})}catch(e){console.warn('[postinstall] prisma generate skipped:', e.message)}\"",
     "deploy:migrate": "prisma migrate deploy && node prisma/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
