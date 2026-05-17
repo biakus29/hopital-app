@@ -21,19 +21,22 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16) {
   process.exit(1)
 }
 
-const PORT = parseInt(process.env.PORT || '21000', 10)
+// Port may be a TCP number (e.g. 4000, 21000) or the literal string "passenger"
+// when running under Phusion Passenger on N0C — in that case Passenger
+// intercepts listen() and wires the app to a Unix socket. Don't coerce strings.
+const rawPort = process.env.PORT || '21000'
+const PORT = /^\d+$/.test(rawPort) ? parseInt(rawPort, 10) : rawPort
 
 async function main () {
   const app = createApp()
   const server = app.listen(PORT, () => {
-    logger.info(`HTTP server listening on port ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`)
+    logger.info(`HTTP server listening on ${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`)
   })
 
-  // On EADDRINUSE (port collision with another local service like nginx on N0C),
-  // pick a free random port instead of crashing. Passenger introspects the
-  // actually-bound port via the listening callback.
+  // On EADDRINUSE (port collision with another local service on N0C), pick a
+  // free random port instead of crashing. Only relevant when PORT is numeric.
   server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
+    if (err.code === 'EADDRINUSE' && typeof PORT === 'number') {
       logger.warn(`Port ${PORT} busy — retrying on a random free port`)
       app.listen(0, () => {
         logger.info(`HTTP server listening on fallback port ${server.address().port}`)
